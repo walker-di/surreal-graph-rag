@@ -1,10 +1,10 @@
 # Documentation
 
 - doc: roadmap (this doc)
-- doc: getting started (Readme.MD)
+- plan: MCP
+- plan: RAG
+- doc: packaging (npm)
+- doc: getting started (Readme.md)
 - doc: i18n (Paraglide)
 - doc: testing (Vitest, Playwright)
 - doc: deployment (electron)
-- doc: packaging (npm)
-- plan: MCP
-- plan: RAG
