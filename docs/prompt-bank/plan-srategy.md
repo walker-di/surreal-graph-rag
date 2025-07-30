@@ -14,3 +14,6 @@ Audit checklist:
 
 it has to be very detailed to even a junior developer can follow and implement
 it. this is is another reason to focus on one thing
+
+the files has to be distributed correctly under for exports. please check
+package.json

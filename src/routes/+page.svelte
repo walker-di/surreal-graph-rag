@@ -1,3 +1,15 @@
-<h1>Welcome to your library project</h1>
-<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+  import { FileExplorer } from "$lib/ui/index.js";
+</script>
+
+<svelte:head>
+  <title>File Explorer Demo</title>
+  <meta
+    name="description"
+    content="Windows File Explorer-like interface demo"
+  />
+</svelte:head>
+
+<div class="h-screen">
+  <FileExplorer initialPath="/Documents" showPreview={true} />
+</div>
