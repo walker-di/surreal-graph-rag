@@ -9,7 +9,10 @@
   import FileList from "./FileList.svelte";
   import PreviewPanel from "./PreviewPanel.svelte";
   import FileExplorerHeader from "./FileExplorerHeader.svelte";
-  import type { FileSystemItem, FileExplorerState } from "./file-explorer-types.js";
+  import type {
+    FileSystemItem,
+    FileExplorerState,
+  } from "./file-explorer-types.js";
   import { getFileSystemItems } from "./file-explorer-mock-data.js";
 
   // Component props using Svelte 5 $props
@@ -27,7 +30,7 @@
     viewMode: "list",
     sortBy: "name",
     sortOrder: "asc",
-    showHidden: false
+    showHidden: false,
   });
 
   let currentItems: FileSystemItem[] = $state([]);
@@ -38,14 +41,12 @@
     currentItems = getFileSystemItems(explorerState.currentPath);
   });
 
-  // Handle navigation
   function handleNavigate(path: string) {
     explorerState.currentPath = path;
     explorerState.selectedItems = [];
     selectedItem = null;
   }
 
-  // Handle item selection
   function handleItemSelect(item: FileSystemItem) {
     selectedItem = item;
     explorerState.selectedItems = [item.id];
@@ -53,7 +54,7 @@
 
   // Handle folder double-click
   function handleFolderOpen(item: FileSystemItem) {
-    if (item.type === 'folder') {
+    if (item.type === "folder") {
       handleNavigate(item.path);
     }
   }
@@ -93,9 +94,7 @@
     {#if showPreview}
       <Separator orientation="vertical" />
       <aside class="w-80 border-l bg-sidebar">
-        <PreviewPanel
-          selectedItem={selectedItem}
-        />
+        <PreviewPanel {selectedItem} />
       </aside>
     {/if}
   </div>

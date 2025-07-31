@@ -15,7 +15,7 @@
     MoreHorizontal,
     Eye,
     Edit,
-    Trash2
+    Trash2,
   } from "lucide-svelte";
   import type { FileSystemItem } from "./file-explorer-types.js";
   import { formatFileSize, getFileIcon } from "./file-explorer-mock-data.js";
@@ -24,9 +24,9 @@
   interface Props {
     items: FileSystemItem[];
     selectedItems: string[];
-    viewMode: 'list' | 'grid';
-    sortBy: 'name' | 'size' | 'dateModified' | 'type';
-    sortOrder: 'asc' | 'desc';
+    viewMode: "list" | "grid";
+    sortBy: "name" | "size" | "dateModified" | "type";
+    sortOrder: "asc" | "desc";
     onItemSelect: (item: FileSystemItem) => void;
     onItemDoubleClick: (item: FileSystemItem) => void;
   }
@@ -38,40 +38,42 @@
     sortBy,
     sortOrder,
     onItemSelect,
-    onItemDoubleClick
+    onItemDoubleClick,
   }: Props = $props();
 
   // Sort items based on current sort settings
-  $: sortedItems = [...items].sort((a, b) => {
-    let comparison = 0;
+  let sortedItems = $derived(
+    [...items].sort((a, b) => {
+      let comparison = 0;
 
-    switch (sortBy) {
-      case 'name':
-        comparison = a.name.localeCompare(b.name);
-        break;
-      case 'size':
-        comparison = (a.size || 0) - (b.size || 0);
-        break;
-      case 'dateModified':
-        comparison = a.dateModified.getTime() - b.dateModified.getTime();
-        break;
-      case 'type':
-        comparison = a.type.localeCompare(b.type);
-        break;
-    }
+      switch (sortBy) {
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "size":
+          comparison = (a.size || 0) - (b.size || 0);
+          break;
+        case "dateModified":
+          comparison = a.dateModified.getTime() - b.dateModified.getTime();
+          break;
+        case "type":
+          comparison = a.type.localeCompare(b.type);
+          break;
+      }
 
-    return sortOrder === 'asc' ? comparison : -comparison;
-  });
+      return sortOrder === "asc" ? comparison : -comparison;
+    }),
+  );
 
   // Handle sort column click
   function handleSort(column: typeof sortBy) {
     if (sortBy === column) {
       // Toggle sort order if same column
-      sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      sortOrder = sortOrder === "asc" ? "desc" : "asc";
     } else {
       // Set new column and default to ascending
       sortBy = column;
-      sortOrder = 'asc';
+      sortOrder = "asc";
     }
   }
 
@@ -89,16 +91,20 @@
 
   // Format date for display
   function formatDate(date: Date): string {
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return (
+      date.toLocaleDateString() +
+      " " +
+      date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
   }
 
   // Get sort icon for column header
   function getSortIcon(column: typeof sortBy) {
     if (sortBy !== column) return ArrowUpDown;
-    return sortOrder === 'asc' ? ArrowUp : ArrowDown;
+    return sortOrder === "asc" ? ArrowUp : ArrowDown;
   }
 </script>
 
@@ -113,9 +119,7 @@
 
     <div class="flex items-center gap-2">
       <!-- View mode toggle could go here -->
-      <Button variant="outline" size="sm">
-        View Options
-      </Button>
+      <Button variant="outline" size="sm">View Options</Button>
     </div>
   </div>
 
@@ -129,40 +133,44 @@
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
-              onclick={() => handleSort('name')}
+              onclick={() => handleSort("name")}
             >
               Name
-              <svelte:component this={getSortIcon('name')} class="ml-2 h-4 w-4" />
+              {@const IconComponent = getSortIcon("name")}
+              <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
           <Table.Head>
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
-              onclick={() => handleSort('size')}
+              onclick={() => handleSort("size")}
             >
               Size
-              <svelte:component this={getSortIcon('size')} class="ml-2 h-4 w-4" />
+              {@const IconComponent = getSortIcon("size")}
+              <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
           <Table.Head>
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
-              onclick={() => handleSort('type')}
+              onclick={() => handleSort("type")}
             >
               Type
-              <svelte:component this={getSortIcon('type')} class="ml-2 h-4 w-4" />
+              {@const IconComponent = getSortIcon("type")}
+              <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
           <Table.Head>
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
-              onclick={() => handleSort('dateModified')}
+              onclick={() => handleSort("dateModified")}
             >
               Date Modified
-              <svelte:component this={getSortIcon('dateModified')} class="ml-2 h-4 w-4" />
+              {@const IconComponent = getSortIcon("dateModified")}
+              <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
           <Table.Head class="w-12"></Table.Head>
@@ -171,7 +179,11 @@
       <Table.Body>
         {#each sortedItems as item (item.id)}
           <Table.Row
-            class="cursor-pointer hover:bg-muted/50 {selectedItems.includes(item.id) ? 'bg-accent' : ''}"
+            class="cursor-pointer hover:bg-muted/50 {selectedItems.includes(
+              item.id,
+            )
+              ? 'bg-accent'
+              : ''}"
             onclick={(e) => handleItemClick(item, e)}
             ondblclick={(e) => handleItemDoubleClick(item, e)}
           >
@@ -187,11 +199,13 @@
               </div>
             </Table.Cell>
             <Table.Cell class="text-muted-foreground">
-              {item.type === 'file' && item.size ? formatFileSize(item.size) : '—'}
+              {item.type === "file" && item.size
+                ? formatFileSize(item.size)
+                : "—"}
             </Table.Cell>
             <Table.Cell class="text-muted-foreground">
               <Badge variant="outline" class="text-xs">
-                {item.type === 'folder' ? 'Folder' : (item.extension || 'File')}
+                {item.type === "folder" ? "Folder" : item.extension || "File"}
               </Badge>
             </Table.Cell>
             <Table.Cell class="text-muted-foreground text-sm">
@@ -201,7 +215,12 @@
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger>
                   {#snippet child({ props })}
-                    <Button {...props} variant="ghost" size="sm" class="h-8 w-8 p-0">
+                    <Button
+                      {...props}
+                      variant="ghost"
+                      size="sm"
+                      class="h-8 w-8 p-0"
+                    >
                       <MoreHorizontal class="h-4 w-4" />
                       <span class="sr-only">Open menu</span>
                     </Button>
@@ -227,7 +246,10 @@
           </Table.Row>
         {:else}
           <Table.Row>
-            <Table.Cell colspan={6} class="h-24 text-center text-muted-foreground">
+            <Table.Cell
+              colspan={6}
+              class="h-24 text-center text-muted-foreground"
+            >
               No files or folders found.
             </Table.Cell>
           </Table.Row>

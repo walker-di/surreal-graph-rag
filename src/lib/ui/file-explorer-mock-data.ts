@@ -35,7 +35,7 @@ export const mockFileSystem: FileSystemItem[] = [
             parentId: "projects",
             dateModified: new Date("2024-01-25"),
             dateCreated: new Date("2024-01-10"),
-          },
+          } as FileSystemFolder,
           {
             id: "readme",
             name: "README.md",
@@ -47,9 +47,9 @@ export const mockFileSystem: FileSystemItem[] = [
             mimeType: "text/markdown",
             dateModified: new Date("2024-01-22"),
             dateCreated: new Date("2024-01-15"),
-          },
+          } as FileSystemFile,
         ],
-      },
+      } as FileSystemFolder,
       {
         id: "images",
         name: "Images",
@@ -70,9 +70,9 @@ export const mockFileSystem: FileSystemItem[] = [
             mimeType: "image/jpeg",
             dateModified: new Date("2024-01-16"),
             dateCreated: new Date("2024-01-16"),
-          },
+          } as FileSystemFile,
         ],
-      },
+      } as FileSystemFolder,
       {
         id: "notes",
         name: "notes.txt",
@@ -84,15 +84,23 @@ export const mockFileSystem: FileSystemItem[] = [
         mimeType: "text/plain",
         dateModified: new Date("2024-01-14"),
         dateCreated: new Date("2024-01-12"),
-      },
+      } as FileSystemFile,
     ],
-  },
+  } as FileSystemFolder,
 ];
 
 export function getFileSystemItems(path: string = "/"): FileSystemItem[] {
   // Placeholder function to simulate file system navigation
-  if (path === "/" || path === "/Documents") {
+
+  // Root level - show the Documents folder
+  if (path === "/") {
     return mockFileSystem;
+  }
+
+  // Documents level - show its contents (Projects, Images, notes.txt)
+  if (path === "/Documents") {
+    const documentsFolder = mockFileSystem[0] as FileSystemFolder;
+    return documentsFolder.children || [];
   }
 
   // Find items in the specified path

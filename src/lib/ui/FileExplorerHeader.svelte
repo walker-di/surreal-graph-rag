@@ -8,13 +8,13 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
   import {
-    ArrowLeft,
-    ArrowRight,
+    ChevronLeft,
+    ChevronRight,
     RotateCcw,
     Home,
     Search,
     Plus,
-    MoreHorizontal
+    MoreHorizontal,
   } from "lucide-svelte";
   import type { BreadcrumbItem } from "./file-explorer-types.js";
 
@@ -27,26 +27,26 @@
   let { currentPath, onNavigate }: Props = $props();
 
   // Navigation history (placeholder)
-  let navigationHistory: string[] = $state(['/Documents']);
+  let navigationHistory: string[] = $state(["/Documents"]);
   let historyIndex: number = $state(0);
 
   // Generate breadcrumb items from current path
-  $: breadcrumbItems = generateBreadcrumbs(currentPath);
+  let breadcrumbItems = $derived(generateBreadcrumbs(currentPath));
 
   function generateBreadcrumbs(path: string): BreadcrumbItem[] {
-    if (path === '/' || path === '') {
-      return [{ name: 'Home', path: '/' }];
+    if (path === "/" || path === "") {
+      return [{ name: "Home", path: "/" }];
     }
 
-    const parts = path.split('/').filter(Boolean);
-    const items: BreadcrumbItem[] = [{ name: 'Home', path: '/' }];
+    const parts = path.split("/").filter(Boolean);
+    const items: BreadcrumbItem[] = [{ name: "Home", path: "/" }];
 
-    let currentPath = '';
+    let currentPath = "";
     for (const part of parts) {
-      currentPath += '/' + part;
+      currentPath += "/" + part;
       items.push({
         name: part,
-        path: currentPath
+        path: currentPath,
       });
     }
 
@@ -69,7 +69,7 @@
   }
 
   function goHome() {
-    onNavigate('/Documents');
+    onNavigate("/Documents");
   }
 
   function refresh() {
@@ -83,8 +83,8 @@
   }
 
   // Check if navigation buttons should be enabled
-  $: canGoBack = historyIndex > 0;
-  $: canGoForward = historyIndex < navigationHistory.length - 1;
+  let canGoBack = $derived(historyIndex > 0);
+  let canGoForward = $derived(historyIndex < navigationHistory.length - 1);
 </script>
 
 <header class="file-explorer-header border-b bg-background">
@@ -98,7 +98,7 @@
         onclick={goBack}
         title="Go back"
       >
-        <ArrowLeft class="h-4 w-4" />
+        <ChevronLeft class="h-4 w-4" />
       </Button>
 
       <Button
@@ -108,24 +108,14 @@
         onclick={goForward}
         title="Go forward"
       >
-        <ArrowRight class="h-4 w-4" />
+        <ChevronRight class="h-4 w-4" />
       </Button>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onclick={refresh}
-        title="Refresh"
-      >
+      <Button variant="ghost" size="sm" onclick={refresh} title="Refresh">
         <RotateCcw class="h-4 w-4" />
       </Button>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onclick={goHome}
-        title="Go to home"
-      >
+      <Button variant="ghost" size="sm" onclick={goHome} title="Go to home">
         <Home class="h-4 w-4" />
       </Button>
     </div>

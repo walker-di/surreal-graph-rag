@@ -6,8 +6,11 @@
 
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { ChevronRight, ChevronDown, Folder, FolderOpen } from "lucide-svelte";
-  import type { FileSystemItem, FileSystemFolder } from "./file-explorer-types.js";
+  import { ChevronRight, ChevronDown, Folder } from "lucide-svelte";
+  import type {
+    FileSystemItem,
+    FileSystemFolder,
+  } from "./file-explorer-types.js";
   import { mockFileSystem } from "./file-explorer-mock-data.js";
 
   // Component props using Svelte 5 $props
@@ -19,11 +22,11 @@
   let { currentPath, onNavigate }: Props = $props();
 
   // Component state using Svelte 5 $state
-  let expandedFolders: Set<string> = $state(new Set(['/Documents']));
+  let expandedFolders: Set<string> = $state(new Set(["/Documents"]));
 
   // Build tree structure from mock data
   function buildTreeStructure(items: FileSystemItem[]): FileSystemFolder[] {
-    return items.filter(item => item.type === 'folder') as FileSystemFolder[];
+    return items.filter((item) => item.type === "folder") as FileSystemFolder[];
   }
 
   let treeData: FileSystemFolder[] = $state(buildTreeStructure(mockFileSystem));
@@ -42,7 +45,9 @@
   function renderTreeNode(folder: FileSystemFolder, level: number = 0) {
     const isExpanded = expandedFolders.has(folder.id);
     const isSelected = currentPath === folder.path;
-    const hasChildren = folder.children && folder.children.some(child => child.type === 'folder');
+    const hasChildren =
+      folder.children &&
+      folder.children.some((child) => child.type === "folder");
 
     return {
       folder,
@@ -50,9 +55,12 @@
       isSelected,
       hasChildren,
       level,
-      children: isExpanded && folder.children
-        ? folder.children.filter(child => child.type === 'folder') as FileSystemFolder[]
-        : []
+      children:
+        isExpanded && folder.children
+          ? (folder.children.filter(
+              (child) => child.type === "folder",
+            ) as FileSystemFolder[])
+          : [],
     };
   }
 </script>
@@ -68,7 +76,7 @@
 </div>
 
 <!-- Recursive Tree Node Snippet using Svelte 5 syntax -->
-{#snippet TreeNode(nodeData)}
+{#snippet TreeNode(nodeData: any)}
   <div class="tree-node" style="padding-left: {nodeData.level * 1}rem">
     <Collapsible.Root open={nodeData.isExpanded}>
       <div class="flex items-center w-full">
@@ -93,15 +101,13 @@
         <!-- Folder Button -->
         <Button
           variant="ghost"
-          class="flex-1 justify-start h-8 px-2 {nodeData.isSelected ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}"
+          class="flex-1 justify-start h-8 px-2 {nodeData.isSelected
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}"
           onclick={() => onNavigate(nodeData.folder.path)}
         >
           <div class="flex items-center gap-2 w-full">
-            {#if nodeData.isExpanded}
-              <FolderOpen class="h-4 w-4" />
-            {:else}
-              <Folder class="h-4 w-4" />
-            {/if}
+            <Folder class="h-4 w-4" />
             <span class="truncate text-sm">{nodeData.folder.name}</span>
           </div>
         </Button>
@@ -112,7 +118,10 @@
         <Collapsible.Content>
           <div class="ml-4 mt-1 space-y-1">
             {#each nodeData.children as childFolder (childFolder.id)}
-              {@const childNodeData = renderTreeNode(childFolder, nodeData.level + 1)}
+              {@const childNodeData = renderTreeNode(
+                childFolder,
+                nodeData.level + 1,
+              )}
               {@render TreeNode(childNodeData)}
             {/each}
           </div>
