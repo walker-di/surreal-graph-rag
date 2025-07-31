@@ -1,6 +1,6 @@
 test-results
 node_modules
-
+data.db
 # Output
 .output
 .vercel

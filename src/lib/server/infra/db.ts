@@ -19,18 +19,19 @@ async function connectDb(_db: Surreal) {
 
 	try {
 		dLog("connectDb - Attempting to connect to SurrealDB");
+		// await _db.connect(DB_CONF.host);
 		await _db.connect(DB_CONF.host, {
 			namespace: DB_CONF.namespace,
 			database: DB_CONF.database,
 		});
 		dLog("connectDb - Connection established, attempting signin");
 
-		await _db.signin({
-			namespace: DB_CONF.namespace,
-			database: DB_CONF.database,
-			username: DB_CONF.username,
-			password: DB_CONF.password,
-		});
+		// await _db.signin({
+		// 	namespace: DB_CONF.namespace,
+		// 	database: DB_CONF.database,
+		// 	username: DB_CONF.username,
+		// 	password: DB_CONF.password,
+		// });
 		dLog("connectDb - Signin successful");
 
 		return _db;
