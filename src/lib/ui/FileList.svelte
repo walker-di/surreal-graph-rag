@@ -8,15 +8,13 @@
   import { Button } from "$lib/components/ui/button/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-  import {
-    ArrowUpDown,
-    ArrowUp,
-    ArrowDown,
-    MoreHorizontal,
-    Eye,
-    Edit,
-    Trash2,
-  } from "lucide-svelte";
+  import ArrowUpDown from "@lucide/svelte/icons/arrow-up-down";
+  import ArrowUp from "@lucide/svelte/icons/arrow-up";
+  import ArrowDown from "@lucide/svelte/icons/arrow-down";
+  import MoreHorizontal from "@lucide/svelte/icons/more-horizontal";
+  import Eye from "@lucide/svelte/icons/eye";
+  import Edit from "@lucide/svelte/icons/edit";
+  import Trash2 from "@lucide/svelte/icons/trash-2";
   import type { FileSystemItem } from "./file-explorer-types.js";
   import { formatFileSize, getFileIcon } from "./file-explorer-mock-data.js";
 
@@ -62,7 +60,7 @@
       }
 
       return sortOrder === "asc" ? comparison : -comparison;
-    }),
+    })
   );
 
   // Handle sort column click
@@ -129,7 +127,13 @@
       <Table.Header>
         <Table.Row>
           <Table.Head class="w-12"></Table.Head>
-          <Table.Head>
+          <Table.Head
+            aria-sort={sortBy === "name"
+              ? sortOrder === "asc"
+                ? "ascending"
+                : "descending"
+              : "none"}
+          >
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
@@ -140,7 +144,13 @@
               <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
-          <Table.Head>
+          <Table.Head
+            aria-sort={sortBy === "size"
+              ? sortOrder === "asc"
+                ? "ascending"
+                : "descending"
+              : "none"}
+          >
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
@@ -151,7 +161,13 @@
               <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
-          <Table.Head>
+          <Table.Head
+            aria-sort={sortBy === "type"
+              ? sortOrder === "asc"
+                ? "ascending"
+                : "descending"
+              : "none"}
+          >
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
@@ -162,7 +178,13 @@
               <IconComponent class="ml-2 h-4 w-4" />
             </Button>
           </Table.Head>
-          <Table.Head>
+          <Table.Head
+            aria-sort={sortBy === "dateModified"
+              ? sortOrder === "asc"
+                ? "ascending"
+                : "descending"
+              : "none"}
+          >
             <Button
               variant="ghost"
               class="h-auto p-0 font-semibold"
@@ -180,7 +202,7 @@
         {#each sortedItems as item (item.id)}
           <Table.Row
             class="cursor-pointer hover:bg-muted/50 {selectedItems.includes(
-              item.id,
+              item.id
             )
               ? 'bg-accent'
               : ''}"
@@ -220,6 +242,7 @@
                       variant="ghost"
                       size="sm"
                       class="h-8 w-8 p-0"
+                      aria-label="Open row menu"
                     >
                       <MoreHorizontal class="h-4 w-4" />
                       <span class="sr-only">Open menu</span>

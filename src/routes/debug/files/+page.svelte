@@ -1,6 +1,11 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card/index.js";
+  import { onMount } from "svelte";
+  import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+  } from "$lib/components/ui/card/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Badge } from "$lib/components/ui/badge/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
@@ -10,7 +15,7 @@
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import RefreshCwIcon from "@lucide/svelte/icons/refresh-cw";
   import TrashIcon from "@lucide/svelte/icons/trash-2";
-  import type { FileRecord, ChunkRecord } from '$lib/ui/file-upload-types.js';
+  import type { FileRecord, ChunkRecord } from "$lib/ui/file-upload-types.js";
 
   // Component state
   let files: FileRecord[] = $state([]);
@@ -23,19 +28,21 @@
   async function loadFiles() {
     loading = true;
     error = null;
-    
+
     try {
-      const response = await fetch('/api/debug/files');
+      const response = await fetch(
+        `/api/debug/files${window.location.search || ""}`
+      );
       if (!response.ok) {
         throw new Error(`Failed to load files: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       files = data.files || [];
       chunks = data.chunks || {};
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load files';
-      console.error('Error loading files:', err);
+      error = err instanceof Error ? err.message : "Failed to load files";
+      console.error("Error loading files:", err);
     } finally {
       loading = false;
     }
@@ -43,24 +50,26 @@
 
   // Delete a file and its chunks
   async function deleteFile(fileId: string) {
-    if (!confirm('Are you sure you want to delete this file and all its chunks?')) {
+    if (
+      !confirm("Are you sure you want to delete this file and all its chunks?")
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/debug/files/${fileId}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to delete file: ${response.statusText}`);
       }
-      
+
       // Reload the files list
       await loadFiles();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to delete file';
-      console.error('Error deleting file:', err);
+      error = err instanceof Error ? err.message : "Failed to delete file";
+      console.error("Error deleting file:", err);
     }
   }
 
@@ -91,11 +100,16 @@
   // Get status color
   function getStatusColor(status: string): string {
     switch (status) {
-      case 'ready': return 'bg-green-500';
-      case 'uploaded': return 'bg-blue-500';
-      case 'processing': return 'bg-yellow-500';
-      case 'error': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case "ready":
+        return "bg-green-500";
+      case "uploaded":
+        return "bg-blue-500";
+      case "processing":
+        return "bg-yellow-500";
+      case "error":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   }
 
@@ -150,12 +164,14 @@
       <Card>
         <CardContent class="pt-6">
           <div class="text-center py-8">
-            <FileTextIcon class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <FileTextIcon
+              class="h-12 w-12 mx-auto mb-4 text-muted-foreground"
+            />
             <h3 class="text-lg font-semibold mb-2">No Files Found</h3>
             <p class="text-muted-foreground mb-4">
               No uploaded files found in the database.
             </p>
-            <Button onclick={() => window.location.href = '/file-upload'}>
+            <Button onclick={() => (window.location.href = "/file-upload")}>
               Upload Files
             </Button>
           </div>
@@ -208,7 +224,9 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div>
                   <p class="text-sm font-medium">Size</p>
-                  <p class="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
+                  <p class="text-sm text-muted-foreground">
+                    {formatFileSize(file.size)}
+                  </p>
                 </div>
                 <div>
                   <p class="text-sm font-medium">Type</p>
@@ -216,12 +234,14 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium">Chunks</p>
-                  <p class="text-sm text-muted-foreground">{file.chunk_count}</p>
+                  <p class="text-sm text-muted-foreground">
+                    {file.chunk_count}
+                  </p>
                 </div>
                 <div>
                   <p class="text-sm font-medium">Uploaded</p>
                   <p class="text-sm text-muted-foreground">
-                    {file.created_at ? formatDate(file.created_at) : 'Unknown'}
+                    {file.created_at ? formatDate(file.created_at) : "Unknown"}
                   </p>
                 </div>
               </div>
@@ -230,7 +250,9 @@
               {#if expandedFiles.has(file.id)}
                 <Separator class="my-4" />
                 <div>
-                  <h4 class="font-medium mb-3">Chunks ({chunks[file.id]?.length || 0})</h4>
+                  <h4 class="font-medium mb-3">
+                    Chunks ({chunks[file.id]?.length || 0})
+                  </h4>
                   {#if chunks[file.id] && chunks[file.id].length > 0}
                     <div class="space-y-2 max-h-96 overflow-y-auto">
                       {#each chunks[file.id] as chunk (chunk.id)}
@@ -247,7 +269,9 @@
                             <div class="text-sm text-muted-foreground mb-2">
                               Characters: {chunk.start_char} - {chunk.end_char}
                             </div>
-                            <div class="text-sm bg-background p-2 rounded border max-h-32 overflow-y-auto">
+                            <div
+                              class="text-sm bg-background p-2 rounded border max-h-32 overflow-y-auto"
+                            >
                               {chunk.content}
                             </div>
                           </CardContent>
@@ -255,7 +279,9 @@
                       {/each}
                     </div>
                   {:else}
-                    <p class="text-sm text-muted-foreground">No chunks found for this file.</p>
+                    <p class="text-sm text-muted-foreground">
+                      No chunks found for this file.
+                    </p>
                   {/if}
                 </div>
               {/if}

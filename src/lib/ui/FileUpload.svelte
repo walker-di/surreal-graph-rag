@@ -19,7 +19,7 @@
   import UploadIcon from "@lucide/svelte/icons/upload";
   import FileSelector from "./FileSelector.svelte";
   import { uploadFiles, validateFile } from "./file-upload-utils.js";
-  import type { UploadResult } from "./file-upload-types.js";
+  import type { UploadResult, UploadResponse } from "./file-upload-types.js";
 
   // Component props using Svelte 5 $props
   interface Props {
@@ -35,6 +35,8 @@
   let currentStatus: string = $state("");
   let uploadResults: UploadResult[] = $state([]);
   let showResults: boolean = $state(false);
+  let validationErrors: string[] = $state([]);
+  let latestRunId: string | null = $state(null);
 
   // Handle file selection
   function handleFilesSelected(files: File[]) {
@@ -48,7 +50,7 @@
     if (selectedFiles.length === 0) return;
 
     // Validate all files first
-    const validationErrors: string[] = [];
+    validationErrors = [];
     selectedFiles.forEach((file) => {
       const validation = validateFile(file);
       if (!validation.valid) {
@@ -57,7 +59,7 @@
     });
 
     if (validationErrors.length > 0) {
-      alert("Validation errors:\n" + validationErrors.join("\n"));
+      showResults = false;
       return;
     }
 
@@ -68,13 +70,18 @@
     currentStatus = "Preparing upload...";
 
     try {
-      // Upload files with progress tracking
-      const response = await uploadFiles(selectedFiles, (progress) => {
-        uploadProgress = progress.progress;
-        currentStatus = `Uploading ${progress.fileName}... ${progress.progress}%`;
-      });
+      // Upload files with progress tracking (default batching to 50)
+      const response: UploadResponse = await uploadFiles(
+        selectedFiles,
+        (progress) => {
+          uploadProgress = progress.progress;
+          currentStatus = `Uploading ${progress.fileName}... ${progress.progress}%`;
+        },
+        { batchSize: 50 }
+      );
 
       uploadResults = response.results;
+      latestRunId = response.runId ?? null;
       currentStatus = "Upload completed";
 
       // Notify parent component
@@ -104,19 +111,31 @@
     isUploading = false;
     uploadProgress = 0;
     currentStatus = "";
+    latestRunId = null;
   }
 
   // Calculate success/failure counts using Svelte 5 $derived
   const successCount = $derived(uploadResults.filter((r) => r.success).length);
   const failureCount = $derived(uploadResults.filter((r) => !r.success).length);
   const totalChunks = $derived(
-    uploadResults.reduce((sum, r) => sum + (r.chunkCount || 0), 0),
+    uploadResults.reduce((sum, r) => sum + (r.chunkCount || 0), 0)
   );
 </script>
 
 <div class="space-y-6">
   <!-- File Selection -->
   <FileSelector onFilesSelected={handleFilesSelected} disabled={isUploading} />
+
+  <!-- Inline validation errors -->
+  {#if validationErrors.length > 0}
+    <div role="alert" class="text-red-600 text-sm">
+      <ul class="list-disc ml-6">
+        {#each validationErrors as err}
+          <li>{err}</li>
+        {/each}
+      </ul>
+    </div>
+  {/if}
 
   <!-- Upload Button -->
   {#if selectedFiles.length > 0 && !isUploading && !showResults}
@@ -210,6 +229,15 @@
         <!-- Actions -->
         <div class="flex justify-center gap-2">
           <Button variant="outline" onclick={reset}>Upload More Files</Button>
+          {#if latestRunId}
+            <Button
+              variant="default"
+              onclick={() =>
+                (window.location.href = `/debug/files?run_id=${latestRunId}`)}
+            >
+              View in Debug
+            </Button>
+          {/if}
         </div>
       </CardContent>
     </Card>

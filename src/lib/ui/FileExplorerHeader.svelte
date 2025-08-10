@@ -7,15 +7,13 @@
   import * as Breadcrumb from "$lib/components/ui/breadcrumb/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
   import { Separator } from "$lib/components/ui/separator/index.js";
-  import {
-    ChevronLeft,
-    ChevronRight,
-    RotateCcw,
-    Home,
-    Search,
-    Plus,
-    MoreHorizontal,
-  } from "lucide-svelte";
+  import ChevronLeft from "@lucide/svelte/icons/chevron-left";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import RotateCcw from "@lucide/svelte/icons/rotate-ccw";
+  import Home from "@lucide/svelte/icons/home";
+  import Search from "@lucide/svelte/icons/search";
+  import Plus from "@lucide/svelte/icons/plus";
+  import MoreHorizontal from "@lucide/svelte/icons/more-horizontal";
   import type { BreadcrumbItem } from "./file-explorer-types.js";
 
   // Component props using Svelte 5 $props
@@ -53,6 +51,29 @@
     return items;
   }
 
+  /**
+   * History management
+   * Ensure initial seed and helper to push while trimming forward history
+   */
+  $effect(() => {
+    if (
+      navigationHistory.length === 0 ||
+      navigationHistory[0] !== currentPath
+    ) {
+      navigationHistory = [currentPath];
+      historyIndex = 0;
+    }
+  });
+
+  function pushToHistory(nextPath: string) {
+    // Drop forward history when navigating anew
+    if (historyIndex < navigationHistory.length - 1) {
+      navigationHistory = navigationHistory.slice(0, historyIndex + 1);
+    }
+    navigationHistory = [...navigationHistory, nextPath];
+    historyIndex = navigationHistory.length - 1;
+  }
+
   // Navigation functions
   function goBack() {
     if (historyIndex > 0) {
@@ -69,17 +90,20 @@
   }
 
   function goHome() {
-    onNavigate("/Documents");
+    const next = "/Documents";
+    onNavigate(next);
+    pushToHistory(next);
   }
 
   function refresh() {
-    // Trigger refresh of current location
+    // Trigger refresh of current location without duplicating history
     onNavigate(currentPath);
   }
 
   // Handle breadcrumb navigation
   function handleBreadcrumbClick(item: BreadcrumbItem) {
     onNavigate(item.path);
+    pushToHistory(item.path);
   }
 
   // Check if navigation buttons should be enabled
@@ -97,6 +121,7 @@
         disabled={!canGoBack}
         onclick={goBack}
         title="Go back"
+        aria-label="Go back"
       >
         <ChevronLeft class="h-4 w-4" />
       </Button>
@@ -107,15 +132,28 @@
         disabled={!canGoForward}
         onclick={goForward}
         title="Go forward"
+        aria-label="Go forward"
       >
         <ChevronRight class="h-4 w-4" />
       </Button>
 
-      <Button variant="ghost" size="sm" onclick={refresh} title="Refresh">
+      <Button
+        variant="ghost"
+        size="sm"
+        onclick={refresh}
+        title="Refresh"
+        aria-label="Refresh"
+      >
         <RotateCcw class="h-4 w-4" />
       </Button>
 
-      <Button variant="ghost" size="sm" onclick={goHome} title="Go to home">
+      <Button
+        variant="ghost"
+        size="sm"
+        onclick={goHome}
+        title="Go to home"
+        aria-label="Go to home"
+      >
         <Home class="h-4 w-4" />
       </Button>
     </div>
@@ -157,15 +195,25 @@
 
     <!-- Action Buttons -->
     <div class="flex items-center gap-1">
-      <Button variant="ghost" size="sm" title="Search">
+      <Button variant="ghost" size="sm" title="Search" aria-label="Search">
         <Search class="h-4 w-4" />
       </Button>
 
-      <Button variant="ghost" size="sm" title="New folder">
+      <Button
+        variant="ghost"
+        size="sm"
+        title="New folder"
+        aria-label="New folder"
+      >
         <Plus class="h-4 w-4" />
       </Button>
 
-      <Button variant="ghost" size="sm" title="More options">
+      <Button
+        variant="ghost"
+        size="sm"
+        title="More options"
+        aria-label="More options"
+      >
         <MoreHorizontal class="h-4 w-4" />
       </Button>
     </div>

@@ -6,7 +6,9 @@
 
   import * as Collapsible from "$lib/components/ui/collapsible/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
-  import { ChevronRight, ChevronDown, Folder } from "lucide-svelte";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
+  import Folder from "@lucide/svelte/icons/folder";
   import type {
     FileSystemItem,
     FileSystemFolder,
@@ -22,7 +24,7 @@
   let { currentPath, onNavigate }: Props = $props();
 
   // Component state using Svelte 5 $state
-  let expandedFolders: Set<string> = $state(new Set(["/Documents"]));
+  let expandedFolders: Set<string> = $state(new Set(["root"]));
 
   // Build tree structure from mock data
   function buildTreeStructure(items: FileSystemItem[]): FileSystemFolder[] {
@@ -58,7 +60,7 @@
       children:
         isExpanded && folder.children
           ? (folder.children.filter(
-              (child) => child.type === "folder",
+              (child) => child.type === "folder"
             ) as FileSystemFolder[])
           : [],
     };
@@ -120,7 +122,7 @@
             {#each nodeData.children as childFolder (childFolder.id)}
               {@const childNodeData = renderTreeNode(
                 childFolder,
-                nodeData.level + 1,
+                nodeData.level + 1
               )}
               {@render TreeNode(childNodeData)}
             {/each}

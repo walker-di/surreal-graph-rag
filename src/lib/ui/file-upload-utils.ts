@@ -89,59 +89,108 @@ export function formatFileSize(bytes: number): string {
 
 /**
  * Upload files to backend with progress tracking
+ * Supports optional batching for large selections to avoid huge multipart bodies.
  */
 export async function uploadFiles(
   files: File[],
   onProgress?: (progress: UploadProgress) => void,
+  opts?: { batchSize?: number }
 ): Promise<UploadResponse> {
-  const formData = new FormData();
-
-  // Add all files to form data
-  files.forEach((file) => {
-    formData.append(`files`, file);
-  });
-
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    // Track upload progress
-    xhr.upload.addEventListener("progress", (event) => {
-      if (event.lengthComputable && onProgress) {
-        const progress = Math.round((event.loaded / event.total) * 100);
-        onProgress({
-          fileId: "batch",
-          fileName: `${files.length} files`,
-          loaded: event.loaded,
-          total: event.total,
-          progress,
-          status: "uploading",
-        });
-      }
+  // Helper to send a single batch
+  function sendBatch(
+    batchFiles: File[],
+    label: string
+  ): Promise<UploadResponse> {
+    const formData = new FormData();
+    batchFiles.forEach((file) => {
+      formData.append(`files`, file);
     });
 
-    // Handle completion
-    xhr.addEventListener("load", () => {
-      if (xhr.status === 200) {
-        try {
-          const response: UploadResponse = JSON.parse(xhr.responseText);
-          resolve(response);
-        } catch (error) {
-          reject(new Error("Invalid response format"));
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      // Track upload progress
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable && onProgress) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          onProgress({
+            fileId: "batch",
+            fileName: label,
+            loaded: event.loaded,
+            total: event.total,
+            progress,
+            status: "uploading",
+          });
         }
-      } else {
-        reject(new Error(`Upload failed: ${xhr.statusText}`));
-      }
-    });
+      });
 
-    // Handle errors
-    xhr.addEventListener("error", () => {
-      reject(new Error("Upload failed"));
-    });
+      // Handle completion
+      xhr.addEventListener("load", () => {
+        if (xhr.status === 200) {
+          try {
+            const response: UploadResponse = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch {
+            reject(new Error("Invalid response format"));
+          }
+        } else {
+          reject(new Error(`Upload failed: ${xhr.statusText}`));
+        }
+      });
 
-    // Start upload
-    xhr.open("POST", "/api/files/upload");
-    xhr.send(formData);
-  });
+      // Handle errors
+      xhr.addEventListener("error", () => {
+        reject(new Error("Upload failed"));
+      });
+
+      // Start upload
+      xhr.open("POST", "/api/files/upload");
+      xhr.send(formData);
+    });
+  }
+
+  const batchSize = opts?.batchSize;
+  if (!batchSize || files.length <= batchSize) {
+    // Single request path (existing behavior)
+    return sendBatch(files, `${files.length} files`);
+  }
+
+  // Batching path
+  const totalBatches = Math.ceil(files.length / batchSize);
+  const aggregate: UploadResponse = {
+    success: true,
+    results: [],
+    totalFiles: 0,
+    successCount: 0,
+    errorCount: 0,
+  };
+  let batchIndex = 0;
+
+  while (batchIndex < totalBatches) {
+    const start = batchIndex * batchSize;
+    const end = Math.min(start + batchSize, files.length);
+    const slice = files.slice(start, end);
+
+    // Provide clearer progress label per batch
+    const label = `Batch ${batchIndex + 1}/${totalBatches} (${
+      slice.length
+    } files)`;
+    const res = await sendBatch(slice, label);
+
+    aggregate.results.push(...res.results);
+    aggregate.totalFiles += res.totalFiles;
+    aggregate.successCount += res.successCount;
+    aggregate.errorCount += res.errorCount;
+    // Preserve runId from the latest batch if provided
+    if (res.runId) {
+      (aggregate as any).runId = res.runId;
+    }
+
+    batchIndex++;
+  }
+
+  aggregate.success = aggregate.errorCount === 0;
+  return aggregate;
 }
 
 /**

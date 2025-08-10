@@ -118,7 +118,7 @@
 
   // Calculate total size using Svelte 5 $derived
   const totalSize = $derived(
-    selectedFiles.reduce((sum, file) => sum + file.size, 0),
+    selectedFiles.reduce((sum, file) => sum + file.size, 0)
   );
   const supportedCount = $derived(selectedFiles.length);
   const hasFiles = $derived(selectedFiles.length > 0);
@@ -159,7 +159,7 @@
       bind:this={fileInput}
       type="file"
       multiple
-      accept=".{SUPPORTED_TEXT_EXTENSIONS.join(',.')}"
+      accept={"." + SUPPORTED_TEXT_EXTENSIONS.join(",.")}
       onchange={handleFileChange}
       class="hidden"
       {disabled}

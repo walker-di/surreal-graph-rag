@@ -14,15 +14,12 @@
 <div class="h-screen relative">
   <!-- Navigation Links -->
   <div class="absolute top-4 right-4 z-10 flex gap-2">
-    <Button onclick={() => (window.location.href = "/file-upload")}>
-      File Upload
-    </Button>
-    <Button
-      variant="outline"
-      onclick={() => (window.location.href = "/debug/files")}
-    >
-      Debug Files
-    </Button>
+    <a href="/file-upload" aria-label="Go to File Upload">
+      <Button>File Upload</Button>
+    </a>
+    <a href="/debug/files" aria-label="Go to Debug Files">
+      <Button variant="outline">Debug Files</Button>
+    </a>
   </div>
 
   <FileExplorer initialPath="/Documents" showPreview={true} />

@@ -3,6 +3,8 @@
  * TypeScript interfaces for file upload and backend processing
  */
 
+import type { RecordId } from "surrealdb";
+
 // Database record types (matches existing SurrealDB tables)
 export interface FileRecord {
   id: string;
@@ -12,15 +14,27 @@ export interface FileRecord {
   mime_type: string;
   extension: string;
   upload_path: string;
-  status: "pending" | "uploading" | "processing" | "uploaded" | "indexing" | "re-indexing" | "ready" | "error";
+  status:
+    | "pending"
+    | "uploading"
+    | "processing"
+    | "uploaded"
+    | "indexing"
+    | "re-indexing"
+    | "ready"
+    | "error";
   chunk_count: number;
+  // Persisted original text fields (stored in files table)
+  original_text?: string;
+  original_length?: number;
+  original_sha256?: string;
   created_at: string;
   updated_at: string;
 }
 
 export interface ChunkRecord {
   id: string;
-  file_id: string;
+  file_id: RecordId<"files">;
   content: string;
   chunk_index: number;
   start_char: number;
@@ -37,7 +51,15 @@ export interface UploadFile {
   type: string;
   extension: string;
   lastModified: Date;
-  status: "pending" | "uploading" | "processing" | "uploaded" | "indexing" | "re-indexing" | "ready" | "error";
+  status:
+    | "pending"
+    | "uploading"
+    | "processing"
+    | "uploaded"
+    | "indexing"
+    | "re-indexing"
+    | "ready"
+    | "error";
   progress: number; // 0-100
   errorMessage?: string;
 }
@@ -66,4 +88,6 @@ export interface UploadResponse {
   totalFiles: number;
   successCount: number;
   errorCount: number;
+  // Optional correlation id for an ingest run (set by server)
+  runId?: string;
 }

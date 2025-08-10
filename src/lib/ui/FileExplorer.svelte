@@ -33,13 +33,8 @@
     showHidden: false,
   });
 
-  let currentItems: FileSystemItem[] = $state([]);
+  let currentItems = $derived(getFileSystemItems(explorerState.currentPath));
   let selectedItem: FileSystemItem | null = $state(null);
-
-  // Load initial data using Svelte 5 $effect
-  $effect(() => {
-    currentItems = getFileSystemItems(explorerState.currentPath);
-  });
 
   function handleNavigate(path: string) {
     explorerState.currentPath = path;
