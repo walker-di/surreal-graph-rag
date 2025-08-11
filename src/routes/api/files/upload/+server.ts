@@ -4,7 +4,8 @@ import type {
   FileRecord,
   UploadResponse,
 } from "$lib/ui/file-upload-types.js";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { buildTextSplitter } from "$lib/server/chunking.js";
+import { sha256Hex } from "$lib/server/hash.js";
 import { getDb } from "$lib/server/infra/db.js";
 import type { RecordId } from "surrealdb";
 
@@ -62,20 +63,6 @@ function getFileExtension(filename: string): string {
   return lastDot === -1 ? "" : filename.slice(lastDot + 1).toLowerCase();
 }
 
-/**
- * Compute SHA-256 hex using Web Crypto (works in SvelteKit runtime)
- */
-async function sha256Hex(input: string): Promise<string> {
-  const data = new TextEncoder().encode(input);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const bytes = new Uint8Array(hashBuffer);
-  let hex = "";
-  for (let i = 0; i < bytes.length; i++) {
-    hex += bytes[i].toString(16).padStart(2, "0");
-  }
-  return hex;
-}
-
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const formData = await request.formData();
@@ -94,24 +81,8 @@ export const POST: RequestHandler = async ({ request }) => {
       );
     }
 
-    // Initialize LangChain text splitter
-    const textSplitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
-      separators: [
-        "\n\n",
-        "\n",
-        " ",
-        ".",
-        ",",
-        "\u200b",
-        "\uff0c",
-        "\u3001",
-        "\uff0e",
-        "\u3002",
-        "",
-      ],
-    });
+    // Initialize LangChain text splitter (shared builder)
+    const textSplitter = buildTextSplitter();
 
     // Connect to SurrealDB
     const db = await getDb();

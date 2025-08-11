@@ -6,6 +6,7 @@ import {
   DB_PASSWORD,
   PORT,
 } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 
 export const SERVER_CONFIG = {
   port: PORT || 3000,
@@ -17,5 +18,12 @@ export const SERVER_CONFIG = {
     username: DB_USERNAME || "",
     password: DB_PASSWORD || "",
   },
+  // Read watch configuration from dynamic env so missing vars don't cause TS errors
+  watch: {
+    mode: (env.WATCH_MODE as "fs" | undefined) ?? "fs",
+    intervalMs: Number(env.WATCH_INTERVAL_MS ?? 60000),
+    rootPath: env.WATCH_ROOT_PATH || process.cwd(),
+  },
 };
+
 console.log("SERVER_CONFIG:", SERVER_CONFIG);

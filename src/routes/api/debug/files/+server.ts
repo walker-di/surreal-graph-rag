@@ -55,6 +55,14 @@ export const GET: RequestHandler = async (event) => {
       chunks[fileId].sort((a, b) => a.chunk_index - b.chunk_index);
     });
 
+    // Fetch latest watch runs summary (order by started_at only; avoid invalid '??' operator)
+    const [watchRunsRes] = await db.query(
+      "SELECT * FROM watch_runs ORDER BY started_at DESC LIMIT 10"
+    );
+    const watchRuns = ((watchRunsRes as any)?.result ?? []) as Array<
+      Record<string, unknown>
+    >;
+
     return json({
       success: true,
       files,
@@ -62,6 +70,7 @@ export const GET: RequestHandler = async (event) => {
       totalFiles: files.length,
       totalChunks: allChunks.length,
       runId: runId ?? null,
+      watchRuns,
     });
   } catch (error) {
     console.error("Error fetching debug files:", error);
