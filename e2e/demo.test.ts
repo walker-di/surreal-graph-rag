@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('home page has expected h1', async ({ page }) => {
-	await page.goto('/');
-	await expect(page.locator('h1')).toBeVisible();
+test('file-upload page renders H1', async ({ page }) => {
+  await page.goto('/file-upload');
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'File Upload System' })
+  ).toBeVisible();
 });
